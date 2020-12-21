@@ -34,6 +34,8 @@ st.sidebar.write(
     learning can be wrapped up into one dashboard. 
     
     Feel free to fork and improve!
+
+    Find the source [here](https://github.com/pricemg/2020_xmas_hack).
     '''
 )
 
