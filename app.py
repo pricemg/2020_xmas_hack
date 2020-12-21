@@ -1,3 +1,9 @@
+"""Example Streamlit dashboard using Plotly & sklearn with Xmas hack 2020 data.
+
+Usage:
+* pip3 install -r requirements.txt
+* streamlit run app.py
+"""
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -15,9 +21,20 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 
+
 st.set_page_config(
-    page_title='Emerging Platforms 😇😡 modeller', 
+    page_title='EP 😇 or 😡  dashboard', 
     layout='wide'
+)
+
+st.sidebar.title('Emerging Platforms 😇 or 😡 data explorer and ML')
+st.sidebar.write(
+    '''
+    This is a very basic dashboard to showcase how visualisations and machine
+    learning can be wrapped up into one dashboard. 
+    
+    Feel free to fork and improve!
+    '''
 )
 
 def load_data(path: str) -> pd.DataFrame:
@@ -32,7 +49,7 @@ st.write('Here is a sample of the input data:')
 st.dataframe(data.head(10))
 
 dashboard_function = st.sidebar.selectbox(
-    label='Choose your function:',
+    label='Choose dashboard function:',
     options=['visualise', 'model']
 )
 target_col = st.sidebar.selectbox(
@@ -40,7 +57,7 @@ target_col = st.sidebar.selectbox(
     options=sorted(data.columns),
 )
 
-# Use the selected target variable to define X and y objects
+# Use the selected target variable to define X and y objects for using in ML
 y = data[target_col].values
 X = data.drop(target_col, axis=1)
 categorical_cols = X.columns
@@ -58,16 +75,19 @@ if dashboard_function == 'visualise':
     )
 
 ### MODEL ###
-
-
 elif dashboard_function == 'model':
 
     # Encode the cetegorical columns
-    X = pd.get_dummies(X, columns=[col for col in categorical_cols if col!=target_col], drop_first=True)
+    # TODO could implement user input to choose encoding type (e.g. label encoding)
+    X = pd.get_dummies(
+        X,
+        columns=[col for col in categorical_cols if col!=target_col],
+        drop_first=True
+    )
 
-    # Define protion for the train/test split
+    # Define portion for the train/test split
     test_proportion = st.sidebar.slider(
-        label='Proportion of data to use for testing:',
+        label='Proportion of data to hold back for testing:',
         min_value=0.05,
         max_value=0.95,
         value=0.2,
@@ -83,7 +103,7 @@ elif dashboard_function == 'model':
     )
 
     def params_DecisionTreeClassifier():
-        """Get user input for defined parameters."""
+        """Get user input for defined parameters of model."""
         params = {
             'max_depth': st.sidebar.slider(
                 label='Max depth of tree:',
@@ -100,7 +120,7 @@ elif dashboard_function == 'model':
         return params
 
     def params_KNeighborsClassifier():
-        """Get user input for defined parameters."""
+        """Get user input for defined parameters of model."""
         params = {
             'n_neighbors': st.sidebar.slider(
                 label='Number of neighbors:',
@@ -113,7 +133,7 @@ elif dashboard_function == 'model':
         return params
 
     def params_LogisticRegression():
-        """Get user input for defined parameters."""
+        """Get user input for defined parameters of model."""
         params = {
             'C': st.sidebar.select_slider(
                 label='C',
@@ -124,14 +144,14 @@ elif dashboard_function == 'model':
         return params
 
     def params_GaussianNB():
-        """Get user input for defined parameters."""
+        """Get user input for defined parameters of model."""
         params = {
         }
 
         return params
 
     def params_SVC():
-        """Get user input for defined parameters."""
+        """Get user input for defined parameters of model."""
         params = {
             'C': st.sidebar.select_slider(
                 label='Regularization parameter',
@@ -145,8 +165,11 @@ elif dashboard_function == 'model':
 
         return params
 
-
-
+    # This dictionary contains all the models available as well as the model
+    # parameter function which allows user customisation for the model.
+    # TODO generalise params_MODEL functions to allow any of the model
+    # parameters to be set by using MODEL.get_params to determine available
+    # params for input into the functions returned dictionary.
     models = {
         'decision trees' : {
             'model': DecisionTreeClassifier,
